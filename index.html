@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>icm-bookkeeping — Multi-Gate LLM Bookkeeping Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f14;
+      --surface:   #141720;
+      --surface2:  #1c2030;
+      --border:    #2a2f42;
+      --text:      #dde3f0;
+      --text-dim:  #8892b0;
+      --accent:    #5eead4;
+      --accent2:   #38bdf8;
+      --teal:      #2dd4bf;
+      --red:       #f87171;
+      --amber:     #fbbf24;
+      --green:     #4ade80;
+      --purple:    #c084fc;
+      --font:      'Inter', system-ui, sans-serif;
+      --mono:      'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,15,20,0.92);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 2rem;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .logo {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    nav { display: flex; gap: 1.5rem; }
+    nav a {
+      color: var(--text-dim);
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    nav a:hover { color: var(--text); text-decoration: none; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0c10;
+      border: none;
+    }
+    .btn-primary:hover { background: #7df0e6; text-decoration: none; }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 6rem 2rem 4rem;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.8rem;
+      border: 1px solid var(--accent);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--accent);
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50%      { opacity:0.4; }
+    }
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1.25rem;
+    }
+    h1 .hl { color: var(--accent); }
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--text-dim);
+      max-width: 580px;
+      margin: 0 auto 2.5rem;
+      line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-actions .btn { font-size: 1rem; padding: 0.65rem 1.4rem; }
+
+    .diagram-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+    .pipeline-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      overflow-x: auto;
+    }
+    .pipeline-diagram pre {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.5;
+      color: var(--text-dim);
+      white-space: pre;
+    }
+    .pipeline-diagram .kw   { color: var(--purple); }
+    .pipeline-diagram .num  { color: var(--amber); }
+    .pipeline-diagram .gate { color: var(--green); }
+    .pipeline-diagram .acc  { color: var(--teal); }
+    .pipeline-diagram .hdr  { color: var(--text); font-weight: 700; }
+    .pipeline-diagram .dim  { color: #4a5270; }
+    .pipeline-diagram .edge { color: #2a3050; }
+
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    h2 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .section-intro {
+      color: var(--text-dim);
+      max-width: 580px;
+      margin-bottom: 3rem;
+      line-height: 1.7;
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .problem-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+    .problem-card .icon {
+      width: 36px; height: 36px;
+      background: rgba(248,113,113,0.12);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+    .problem-card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .problem-card p {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .problem-card .cost {
+      display: inline-block;
+      margin-top: 0.75rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--red);
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 4px;
+      padding: 0.2rem 0.5rem;
+    }
+
+    .steps { counter-reset: step; }
+    .step {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      align-items: start;
+    }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .step h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    .step p {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .step code {
+      font-family: var(--mono);
+      font-size: 0.8em;
+      background: var(--surface2);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      color: var(--accent2);
+    }
+
+    .gate-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .gate-table th {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    .gate-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .gate-table tr:last-child td { border-bottom: none; }
+    .gate-table .score {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .gate-table .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: 0.04em;
+    }
+    .badge-proceed  { background: rgba(74,222,128,0.12);  color: var(--green);  border: 1px solid rgba(74,222,128,0.3); }
+    .badge-clarify  { background: rgba(251,191,36,0.12);  color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+    .badge-misc     { background: rgba(96,165,250,0.12);  color: #60a5fa;      border: 1px solid rgba(96,165,250,0.3); }
+    .badge-flag     { background: rgba(248,113,113,0.12); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .comparison-table th {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+    .comparison-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table .check { color: var(--green); font-weight: 700; }
+    .comparison-table .cross { color: var(--red); font-weight: 700; }
+    .comparison-table .partial { color: var(--amber); }
+    .comparison-table .col-feature { font-weight: 500; }
+    .comparison-table .col-icm { color: var(--accent); font-weight: 600; }
+    .comparison-table .col-smb { color: var(--text-dim); }
+
+    .loop-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .loop-diagram pre {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      line-height: 1.6;
+      color: var(--text-dim);
+    }
+    .loop-diagram .key { color: var(--accent); }
+    .loop-diagram .val { color: var(--green); }
+    .loop-diagram .hdr { color: var(--text); font-weight: 700; }
+
+    .rules-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .rule-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+    .rule-card .rule-file {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent2);
+      margin-bottom: 0.5rem;
+    }
+    .rule-card .rule-desc {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .rule-card code {
+      font-family: var(--mono);
+      font-size: 0.75em;
+      background: var(--surface);
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+      color: var(--teal);
+    }
+
+    .getting-started { max-width: 680px; }
+    .install-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .install-block .cmd {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .install-block p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+    .note-box {
+      display: flex;
+      gap: 0.75rem;
+      background: rgba(56,189,248,0.07);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 0.875rem;
+      color: var(--text-dim);
+    }
+    .note-box .icon { font-size: 1.1rem; flex-shrink: 0; }
+    .note-box strong { color: var(--text); }
+
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .model-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.75rem;
+    }
+    .model-card .tag {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .tag-free  { background: rgba(74,222,128,0.12);  color: var(--green);  border: 1px solid rgba(74,222,128,0.3); }
+    .tag-paid  { background: rgba(192,132,252,0.12); color: var(--purple); border: 1px solid rgba(192,132,252,0.3); }
+    .model-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .model-card ul {
+      list-style: none;
+      font-size: 0.875rem;
+      color: var(--text-dim);
+    }
+    .model-card ul li {
+      padding: 0.25rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+    .model-card ul li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--text-dim);
+    }
+    footer .footer-links {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    footer .cite {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+      display: inline-block;
+      color: var(--text-dim);
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    @media (max-width: 640px) {
+      nav { display: none; }
+      .hero { padding: 4rem 1.5rem 3rem; }
+      .section { padding: 3rem 1.5rem; }
+      .diagram-wrap { padding: 0 1rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">icm-bookkeeping</div>
+    <nav>
+      <a href="#problem">Problem</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#learning-loop">Learning</a>
+      <a href="#getting-started">Docs</a>
+      <a href="#business-model">Model</a>
+    </nav>
+    <a href="https://github.com/sidneyalexanderbuilds-dev/icm-bookkeeping" class="btn btn-primary" target="_blank">↗ View on GitHub</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Open Source — MIT License</div>
+  <h1>Bookkeeping That <span class="hl">Runs Itself</span></h1>
+  <p>Multi-gate LLM-validated pipeline. Invoices in, journal entries out — autonomously. Humans handle the 10% the system can't.</p>
+  <div class="hero-actions">
+    <a href="#getting-started" class="btn btn-primary">Get Started</a>
+    <a href="https://github.com/sidneyalexanderbuilds-dev/icm-bookkeeping" class="btn btn-outline" target="_blank">Source Code</a>
+  </div>
+</section>
+
+<div class="diagram-wrap">
+  <div class="pipeline-diagram">
+<pre>
+<span class="edge">╔══════════════════════════════════════════════════════════════════════════════════════════════════════════╗</span>
+<span class="edge">║</span>  <span class="hdr">INVOICE</span>  <span class="edge">→</span>  <span class="hdr">01-COLLECT</span>  <span class="edge">→</span>  <span class="hdr">02-EXTRACT</span>  <span class="edge">→</span>  <span class="hdr">03-CATEGORIZE</span>  <span class="edge">→</span>  <span class="hdr">04-JOURNAL</span>  <span class="edge">→</span>  <span class="hdr">05-EXPORT</span>  <span class="edge">→</span>  <span class="hdr">CSV/JSON</span>  <span class="edge">║</span>
+<span class="edge">║</span>            <span class="dim">            ↓             ↓               ↓                ↓                ↓              ║</span>
+<span class="edge">║</span>            <span class="dim">        Normalize   LLM Judge  <span class="gate">█</span>  LLM Judge  <span class="gate">█</span>  LLM Judge  <span class="gate">█</span>   Balance Check    ║</span>
+<span class="edge">║</span>            <span class="dim">          ↓        PROCEED          PROCEED         PROCEED        journal.csv  ║</span>
+<span class="edge">║</span>            <span class="dim">                   CLARIFY          CLARIFY         CLARIFY                       ║</span>
+<span class="edge">║</span>            <span class="dim">                   MISC             MISC            MISC                         ║</span>
+<span class="edge">║</span>            <span class="dim">                   FLAG             FLAG            FLAG                         ║</span>
+<span class="edge">╚══════════════════════════════════════════════════════════════════════════════════════════════════════════╝</span>
+
+  <span class="gate">█</span> = <span class="gate">LLM JUDGE GATE</span>  scores confidence 0–1 on each stage output
+          routes: PROCEED / CLARIFY / MISC / FLAG
+</pre>
+  </div>
+</div>
+
+<section class="section" id="problem">
+  <div class="section-label">The Problem</div>
+  <h2>Bookkeeping is expensive and slow</h2>
+  <p class="section-intro">SMBs spend $300–$800/month on bookkeeping. Solo founders burn 3–8 hours/month. Current tools are either black-box SaaS or spreadsheets held together with manual work.</p>
+
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="icon">💸</div>
+      <h3>High cost</h3>
+      <p>Most small businesses pay a bookkeeper $300–$800/month. For what is mostly rule-based, repetitive work.</p>
+      <span class="cost">$3,600–$9,600/year</span>
+    </div>
+    <div class="problem-card">
+      <div class="icon">🕐</div>
+      <h3>Hours of manual work</h3>
+      <p>Solo founders and SMB operators spend hours each month categorizing receipts, chasing invoices, reconciling accounts.</p>
+      <span class="cost">3–8 hrs/month</span>
+    </div>
+    <div class="problem-card">
+      <div class="icon">📑</div>
+      <h3>Document chasing</h3>
+      <p>"We spend more time chasing clients for receipts than doing the actual accounting." — r/Accounting</p>
+    </div>
+    <div class="problem-card">
+      <div class="icon">🔒</div>
+      <h3>Black-box SaaS</h3>
+      <p>QuickBooks and Xero are expensive, complex, and opaque. You can't inspect the logic or extend it yourself.</p>
+      <span class="cost">$80–$200/mo</span>
+    </div>
+    <div class="problem-card">
+      <div class="icon">🔁</div>
+      <h3>Same mistakes every month</h3>
+      <p>Without learned rules, the system repeats the same categorization errors. No accumulation of context.</p>
+    </div>
+    <div class="problem-card">
+      <div class="icon">⚠️</div>
+      <h3>LLMs hallucinate</h3>
+      <p>Put a language model in charge of financial data without guardrails and you get confident errors. The numbers have to be right.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how-it-works">
+  <div class="section-label">How It Works</div>
+  <h2>Five stages. Four judge gates.</h2>
+  <p class="section-intro">Each stage has one job. After each job, the LLM judges its own output and scores confidence. If confidence is low, it asks a binary question before proceeding.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Collect — Normalize invoices from any source</h3>
+        <p>Drop PDFs, images, or emails into <code>input/invoices/</code>. The collect stage extracts raw text and normalizes to JSONL. No judge here — pass-through only.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Extract + Judge — Structured field extraction</h3>
+        <p>LLM extracts vendor, amount, date, line items, payment terms, invoice number. Judge scores on vendor resolution, amount accuracy, and completeness. <em>"Is this Amazon or AWS?"</em></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Categorize + Judge — Map to chart of accounts</h3>
+        <p>LLM maps to account codes (Software/SaaS, Meals, Travel, etc.). Judge scores category accuracy, duplicate detection, and anomaly flags. Learned rules applied first.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <h3>Journal + Judge — Double-entry generation</h3>
+        <p>LLM generates debit/credit pairs that balance. Judge verifies: debits = credits? right accounts debited/credited? memo accurate? <code>Software/SaaS DEBIT, Cash CREDIT</code></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div>
+        <h3>Export + Validate — Mechanical checks only</h3>
+        <p>No LLM needed here — just math. Balance check (debits = credits), format validation, completeness check. Outputs <code>journal_export.csv</code> for spreadsheet import.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 2.5rem; margin-bottom: 1rem; font-size: 1.1rem;">The Judge Gate</h3>
+  <p style="color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem;">After every stage, the LLM critiques its own output and scores confidence 0–1. Four possible routes:</p>
+
+  <table class="gate-table">
+    <thead>
+      <tr>
+        <th>Score</th>
+        <th>Decision</th>
+        <th>What happens</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="score" style="color: var(--green)">≥ 0.85</td>
+        <td><span class="badge badge-proceed">PROCEED</span></td>
+        <td>High confidence. Next stage immediately.</td>
+      </tr>
+      <tr>
+        <td class="score" style="color: var(--amber)">0.60 – 0.84</td>
+        <td><span class="badge badge-clarify">CLARIFY</span></td>
+        <td>Ask binary question → learn rule → retry (max 2×). Then MISC.</td>
+      </tr>
+      <tr>
+        <td class="score" style="color: #60a5fa">0.40 – 0.59</td>
+        <td><span class="badge badge-misc">MISC</span></td>
+        <td>Default to Miscellaneous (Expense or Income by sign). Continue pipeline, flag for review.</td>
+      </tr>
+      <tr>
+        <td class="score" style="color: var(--red)">&lt; 0.40</td>
+        <td><span class="badge badge-flag">FLAG</span></td>
+        <td>Block. Await human review. Pipeline resumes after human resolves.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section" id="learning-loop">
+  <div class="section-label">The Learning Loop</div>
+  <h2>The system gets smarter over time</h2>
+  <p class="section-intro">Every binary clarification isn't just a one-off answer. It's a learned rule. The next invoice from the same vendor uses it. Fewer clarifications. Higher pass-through.</p>
+
+  <div class="loop-diagram">
+<pre>
+<span class="hdr">Client answers binary question:</span>
+  <span class="key">"Is this Amazon or AWS?"</span> → <span class="val">[Amazon]</span>
+
+  <span class="hdr">System infers and writes rule:</span>
+  <span class="key">vendor_map.csv</span>  ← <span class="val">AWS → Amazon, AMZN → Amazon</span>
+  <span class="key">category_hints.json</span> ← <span class="val">Amazon → Software/SaaS</span>
+
+  <span class="hdr">Next invoice from AWS:</span>
+  <span class="hdr">  1. Rule found → category resolved immediately</span>
+  <span class="hdr">  2. Confidence: 0.92 → PROCEED (no question asked)</span>
+  <span class="hdr">  3. Pipeline continues, human not involved</span>
+</pre>
+  </div>
+
+  <h3 style="margin-bottom: 1rem; font-size: 1rem; font-family: var(--mono); color: var(--accent);">Rules stored in <code>_config/rules/</code></h3>
+  <div class="rules-list">
+    <div class="rule-card">
+      <div class="rule-file">vendor_map.csv</div>
+      <div class="rule-desc">Maps vendor aliases to canonical names.<br/><code>AMZN → Amazon</code></div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-file">amount_ranges.json</div>
+      <div class="rule-desc">Expected amount ranges per vendor. Detects anomalies.<br/><code>AWS: $10–$20,000</code></div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-file">category_hints.json</div>
+      <div class="rule-desc">Text patterns and vendor-to-category hints.<br/><code>Amazon → Software/SaaS</code></div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-file">chart_of_accounts.json</div>
+      <div class="rule-desc">Your chart of accounts — customize per client.<br/><code>Software/SaaS: 6300</code></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="comparison">
+  <div class="section-label">Comparison</div>
+  <h2>What makes this different</h2>
+
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th class="col-icm">icm-bookkeeping</th>
+        <th class="col-smb">QuickBooks / Xero</th>
+        <th class="col-smb">Single LLM script</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="col-feature">Inspectable pipeline logic</td>
+        <td class="check">✓ Markdown stage contracts</td>
+        <td class="cross">✗ Black box</td>
+        <td class="partial">~ Code is readable</td>
+      </tr>
+      <tr>
+        <td class="col-feature">Multi-gate confidence scoring</td>
+        <td class="check">✓ LLM judge after every stage</td>
+        <td class="cross">✗ No</td>
+        <td class="cross">✗ Single pass</td>
+      </tr>
+      <tr>
+        <td class="col-feature">Binary clarification flow</td>
+        <td class="check">✓ + learns rules</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td class="col-feature">Learns from your answers</td>
+        <td class="check">✓ Rule accumulation per client</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td class="col-feature">Double-entry journal validation</td>
+        <td class="check">✓ Judge verifies balance</td>
+        <td class="partial">~ Built in, not inspectable</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td class="col-feature">Human-in-the-loop at breakpoints</td>
+        <td class="check">✓ FLAG + review gates</td>
+        <td class="partial">~ Manual review mode</td>
+        <td class="cross">✗ Fully automated</td>
+      </tr>
+      <tr>
+        <td class="col-feature">Self-host / own your data</td>
+        <td class="check">✓ Run locally</td>
+        <td class="cross">✗ Cloud only</td>
+        <td class="check">✓ If local model</td>
+      </tr>
+      <tr>
+        <td class="col-feature">Open source / extensible</td>
+        <td class="check">✓ MIT, fork and modify</td>
+        <td class="cross">✗ Proprietary</td>
+        <td class="partial">~ Varies</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section" id="getting-started">
+  <div class="section-label">Getting Started</div>
+  <h2>Up and running in five minutes</h2>
+  <p class="section-intro">The pipeline is a Python script. Set your LLM provider, scaffold a workspace, drop in invoices.</p>
+
+  <div class="getting-started">
+    <div class="install-block">
+      <div class="cmd"># 1. Clone the repo</div>
+      <p><code>git clone https://github.com/sidneyalexanderbuilds-dev/icm-bookkeeping.git</code></p>
+    </div>
+    <div class="install-block">
+      <div class="cmd"># 2. Set your LLM provider (OpenAI by default)</div>
+      <p>Set <code>ICM_LLM_PROVIDER</code> and <code>ICM_LLM_MODEL</code> in your environment, or edit <code>scripts/run_pipeline.py</code>. Supports OpenAI, Anthropic, and local (llama.cpp/Ollama).</p>
+    </div>
+    <div class="install-block">
+      <div class="cmd"># 3. Scaffold a client workspace</div>
+      <p><code>python scripts/scaffold.py --template . --workspace ~/.bookkeeping/myclient --client "My Business"</code></p>
+    </div>
+    <div class="install-block">
+      <div class="cmd"># 4. Configure your chart of accounts</div>
+      <p>Edit <code>_config/rules/chart_of_accounts.json</code> with your account codes and categories.</p>
+    </div>
+    <div class="install-block">
+      <div class="cmd"># 5. Drop invoices in and run</div>
+      <p><code>cp invoice.pdf input/invoices/ && python scripts/run_pipeline.py --workspace ~/.bookkeeping/myclient --watch</code></p>
+    </div>
+
+    <div class="note-box">
+      <div class="icon">ℹ️</div>
+      <div>
+        <strong>Prerequisites:</strong> Python 3.10+, <code>pdftotext</code> (poppler-utils), <code>tesseract</code> for OCR on image files. Install with <code>apt install poppler-utils tesseract-ocr</code>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="business-model">
+  <div class="section-label">Business Model</div>
+  <h2>Free repo. Paid early access.</h2>
+  <p class="section-intro">The pipeline itself is MIT-licensed and free. Paid early access funds development and adds enterprise features.</p>
+
+  <div class="model-grid">
+    <div class="model-card">
+      <div class="tag tag-free">Free</div>
+      <h3>icm-bookkeeping Pipeline</h3>
+      <ul>
+        <li>5-stage invoice-to-journal pipeline</li>
+        <li>Multi-gate LLM judge system</li>
+        <li>Binary clarification + rule learning</li>
+        <li>Double-entry journal validation</li>
+        <li>CSV/JSON export</li>
+        <li>Run on your own invoices, forever</li>
+      </ul>
+    </div>
+    <div class="model-card">
+      <div class="tag tag-paid">Paid Early Access</div>
+      <h3>icm-bookkeeping Pro</h3>
+      <ul>
+        <li>Multi-entity support (consolidated reporting)</li>
+        <li>Bank statement auto-matching</li>
+        <li>QuickBooks / Xero direct sync</li>
+        <li>Custom model fine-tuning for your chart of accounts</li>
+        <li>Priority rule inferencing</li>
+        <li>Co-design sessions on roadmap</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="margin-top: 2rem; font-size: 0.875rem; color: var(--text-dim);">
+    Want early access or want to co-design the roadmap? Open an issue or reach out.
+  </p>
+</section>
+
+<footer>
+  <div class="footer-links">
+    <a href="https://github.com/sidneyalexanderbuilds-dev/icm-bookkeeping" target="_blank">GitHub</a>
+    <a href="https://arxiv.org/abs/2603.16021" target="_blank">ICM Paper</a>
+    <a href="https://github.com/sidneyalexanderbuilds-dev/icm-bookkeeping/issues" target="_blank">Issues</a>
+  </div>
+  <div class="cite">
+    Moy, A. & Sidney Alexander. "icm-bookkeeping: Multi-Gate LLM-Validated Bookkeeping Pipeline." GitHub, 2026.<br/>
+    https://github.com/sidneyalexanderbuilds-dev/icm-bookkeeping
+  </div>
+</footer>
+
+</body>
+</html>
