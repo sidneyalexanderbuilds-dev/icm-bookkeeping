@@ -1,0 +1,20 @@
+vendor_alias,canonical_name,default_category
+AMZN,Amazon,Office Supplies
+AMZN MKTP,Amazon,Office Supplies
+AMZNMP,Amazon,Office Supplies
+GOOG,Google,Software/SaaS
+GOOG*,Google,Software/SaaS
+GITHUB,Github,Software/SaaS
+MSFT,Microsoft,Software/SaaS
+WHOLEFDS,Whole Foods,Meals & Entertainment
+WFM,Whole Foods,Meals & Entertainment
+TRADER JOES,Trader Joe's,Meals & Entertainment
+COSTCO,Costco,Office Supplies
+STAPLES,Staples,Office Supplies
+UBER,Uber,Travel
+LYFT,Lyft,Travel
+AIRBNB,Airbnb,Travel
+NETFLIX,Netflix,Software/SaaS
+SPOTIFY,Spotify,Software/SaaS
+AWS,Amazon Web Services,Software/SaaS
+AMAZN,Amazon,Office Supplies

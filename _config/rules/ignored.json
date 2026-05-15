@@ -1,0 +1,14 @@
+{
+  "ignore_patterns": [
+    "^ATM withdrawal",
+    "^Bank transfer",
+    "^Interest payment"
+  ],
+  "misc_defaults": {
+    "expense_misc": "Miscellaneous",
+    "expense_code": "6999",
+    "income_misc": "Miscellaneous",
+    "income_code": "4999"
+  },
+  "threshold_for_misc": 0.4
+}

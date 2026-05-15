@@ -1,0 +1,33 @@
+{
+  "expenses": {
+    "Office Supplies": "6200",
+    "Software/SaaS": "6300",
+    "Meals & Entertainment": "6400",
+    "Travel": "6500",
+    "Professional Services": "6600",
+    "Utilities": "6700",
+    "Rent": "6800",
+    "Insurance": "6850",
+    "Bank Fees": "6900",
+    "Miscellaneous": "6999"
+  },
+  "income": {
+    "Sales": "4000",
+    "Service Revenue": "4100",
+    "Interest Income": "4200",
+    "Other Income": "4900",
+    "Miscellaneous": "4999"
+  },
+  "assets": {
+    "Cash/Bank": "1000",
+    "Accounts Receivable": "1100",
+    "Equipment": "1500",
+    "Prepaid Expenses": "1200"
+  },
+  "liabilities": {
+    "Accounts Payable": "2000",
+    "Credit Card": "2100",
+    "Notes Payable": "2200",
+    "Sales Tax Payable": "2300"
+  }
+}

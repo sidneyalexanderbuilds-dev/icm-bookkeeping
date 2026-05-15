@@ -1,0 +1,10 @@
+{
+  "business_name": "YOUR BUSINESS NAME",
+  "fiscal_year_start_month": 1,
+  "default_currency": "USD",
+  "tax_rate": 0.0,
+  "default_bank_account": {
+    "name": "Cash/Bank",
+    "code": "1000"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "Amazon": {"min": 10, "max": 5000, "typical": 150},
+  "Amazon Web Services": {"min": 10, "max": 20000, "typical": 500},
+  "Google": {"min": 6, "max": 500, "typical": 144},
+  "Github": {"min": 4, "max": 500, "typical": 21},
+  "Microsoft": {"min": 10, "max": 2000, "typical": 99},
+  "Netflix": {"min": 6, "max": 30, "typical": 15},
+  "Spotify": {"min": 9, "max": 20, "typical": 10},
+  "Uber": {"min": 10, "max": 200, "typical": 25},
+  "Lyft": {"min": 10, "max": 150, "typical": 20},
+  "Whole Foods": {"min": 20, "max": 500, "typical": 85},
+  "Trader Joe's": {"min": 20, "max": 300, "typical": 75},
+  "Costco": {"min": 50, "max": 1000, "typical": 200},
+  "Staples": {"min": 10, "max": 500, "typical": 45}
+}

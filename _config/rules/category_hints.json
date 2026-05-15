@@ -1,0 +1,19 @@
+{
+  "description_patterns": {
+    "software": ["subscription", "saas", "software", "license", "cloud", "hosting"],
+    "office_supplies": ["supplies", "office", "paper", "printer", "ink"],
+    "meals": ["food", "restaurant", "cafe", "coffee", "lunch", "dinner", "grocery"],
+    "travel": ["uber", "lyft", "taxi", "airline", "flight", "hotel", "airbnb", "travel"],
+    "utilities": ["electric", "gas", "water", "internet", "phone", "utility"],
+    "professional": ["consulting", "legal", "accounting", "professional", "service"],
+    "income": ["payment received", "deposit", "transfer in", "refund"]
+  },
+  "category_defaults": {
+    "software": "Software/SaaS",
+    "office_supplies": "Office Supplies",
+    "meals": "Meals & Entertainment",
+    "travel": "Travel",
+    "utilities": "Utilities",
+    "professional": "Professional Services"
+  }
+}

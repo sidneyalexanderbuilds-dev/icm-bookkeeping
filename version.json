@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "icm_version": "1.0",
+  "name": "icm-bookkeeping",
+  "description": "Multi-gate LLM-validated bookkeeping pipeline",
+  "author": "Sidney Alexander",
+  "repository": "https://github.com/sidneyalexanderbuilds-dev/icm-bookkeeping",
+  "stages": [
+    {"id": "01-collect", "name": "Invoice Collect", "gate": false},
+    {"id": "02-extract", "name": "Invoice Extract", "gate": true},
+    {"id": "03-categorize", "name": "Categorize", "gate": true},
+    {"id": "04-journal", "name": "Journal Generation", "gate": true},
+    {"id": "05-export", "name": "Export + Validate", "gate": false}
+  ],
+  "confidence_thresholds": {
+    "proceed": 0.85,
+    "clarify": 0.60,
+    "misc": 0.40
+  },
+  "max_retries": 2
+}
